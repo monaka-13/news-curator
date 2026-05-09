@@ -1,0 +1,13 @@
+CREATE TABLE articles (
+    id BIGSERIAL PRIMARY KEY,
+    url VARCHAR(2048) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT,
+    summary_short TEXT,
+    source_name VARCHAR(255),
+    published_at TIMESTAMP,
+    fetched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_articles_url UNIQUE (url)
+);
