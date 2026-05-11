@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.demo.Article.ArticleFetchException;
+import com.example.demo.Article.ArticleNotFoundException;
 import com.example.demo.Article.ArticleUrlConflictException;
 
 @RestControllerAdvice
@@ -14,6 +16,16 @@ public class ApiExceptionHandler {
   @ExceptionHandler(ArticleUrlConflictException.class)
   public ResponseEntity<Void> handleUrlConflict(ArticleUrlConflictException ex) {
     return ResponseEntity.status(HttpStatus.CONFLICT).build();
+  }
+
+  @ExceptionHandler(ArticleNotFoundException.class)
+  public ResponseEntity<String> handleArticleNotFound(ArticleNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+  }
+
+  @ExceptionHandler(ArticleFetchException.class)
+  public ResponseEntity<String> handleArticleFetch(ArticleFetchException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(ex.getMessage());
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

@@ -17,6 +17,9 @@ public class Article {
   /** Placeholder until real title is fetched; keeps DB `title NOT NULL`. */
   public static final String PLACEHOLDER_TITLE = "(No Title)";
 
+  private static final int TITLE_COLUMN_LEN = 255;
+  private static final int SUMMARY_SHORT_COLUMN_LEN = 1000;
+
   protected Article() {
   }
 
@@ -33,6 +36,32 @@ public class Article {
     article.createdAt = now;
     article.updatedAt = now;
     return article;
+  }
+
+  /**
+   * Applies scraped content: non-blank title replaces the placeholder; body and a truncated
+   * {@code summary_short} are set; {@code fetchedAt} and {@code updatedAt} are refreshed.
+   */
+  public void applyFetchedContent(String title, String body, Instant fetchedAt) {
+    Instant now = fetchedAt != null ? fetchedAt : Instant.now();
+    if (title != null && !title.isBlank()) {
+      this.title = truncate(title, TITLE_COLUMN_LEN);
+    } else {
+      this.title = PLACEHOLDER_TITLE;
+    }
+    if (body != null && !body.isBlank()) {
+      this.body = body;
+      this.summaryShort = truncate(body, SUMMARY_SHORT_COLUMN_LEN);
+    } else {
+      this.body = null;
+      this.summaryShort = null;
+    }
+    this.fetchedAt = now;
+    this.updatedAt = now;
+  }
+
+  public boolean isPending() {
+    return PLACEHOLDER_TITLE.equals(this.title);
   }
 
   @Id
@@ -76,5 +105,24 @@ public class Article {
 
   public Instant getFetchedAt() {
     return fetchedAt;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getBody() {
+    return body;
+  }
+
+  public String getSummaryShort() {
+    return summaryShort;
+  }
+
+  private static String truncate(String value, int maxLen) {
+    if (value.length() <= maxLen) {
+      return value;
+    }
+    return value.substring(0, maxLen);
   }
 }
