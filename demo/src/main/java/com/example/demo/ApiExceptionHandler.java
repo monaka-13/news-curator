@@ -6,6 +6,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.validation.ConstraintViolationException;
+
 import com.example.demo.Article.ArticleFetchException;
 import com.example.demo.Article.ArticleNotFoundException;
 import com.example.demo.Article.ArticleUrlConflictException;
@@ -40,5 +42,10 @@ public class ApiExceptionHandler {
         .findFirst()
         .orElse("validation failed");
     return ResponseEntity.badRequest().body(message);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<String> handleConstraintViolation(ConstraintViolationException ex) {
+    return ResponseEntity.badRequest().body(ex.getMessage());
   }
 }
