@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createArticle, fetchArticles } from './api/articles'
-import type { ArticleListItem, PagedArticlesResponse } from './api/types'
+import type { ArticleListItem, PagedArticlesResponse } from './api/schemas'
 import './App.css'
 
 const PAGE_SIZE = 20

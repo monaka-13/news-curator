@@ -1,4 +1,10 @@
-import type { CreateArticleResponse, PagedArticlesResponse } from './types'
+import { z } from 'zod'
+import {
+  CreateArticleResponseSchema,
+  PagedArticlesResponseSchema,
+  type CreateArticleResponse,
+  type PagedArticlesResponse,
+} from './schemas'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080'
 
@@ -8,6 +14,14 @@ function articlesUrl(q: string, page: number, size: number): string {
   params.set('page', String(page))
   params.set('size', String(size))
   return `${API_BASE}/api/articles?${params}`
+}
+
+function parseJson<T>(schema: z.ZodType<T>, raw: unknown, label: string): T {
+  const result = schema.safeParse(raw)
+  if (!result.success) {
+    throw new Error(`${label}: ${result.error.message}`)
+  }
+  return result.data
 }
 
 export async function fetchArticles(
@@ -20,7 +34,8 @@ export async function fetchArticles(
     const text = await res.text()
     throw new Error(text || `HTTP ${res.status}`)
   }
-  return res.json() as Promise<PagedArticlesResponse>
+  const raw: unknown = await res.json()
+  return parseJson(PagedArticlesResponseSchema, raw, 'Response for listing articles')
 }
 
 export async function createArticle(url: string): Promise<CreateArticleResponse> {
@@ -30,11 +45,12 @@ export async function createArticle(url: string): Promise<CreateArticleResponse>
     body: JSON.stringify({ url }),
   })
   if (res.status === 409) {
-    throw new Error('この URL はすでに登録されています。')
+    throw new Error('URL already registered')
   }
   if (!res.ok) {
     const text = await res.text()
     throw new Error(text || `HTTP ${res.status}`)
   }
-  return res.json() as Promise<CreateArticleResponse>
+  const raw: unknown = await res.json()
+  return parseJson(CreateArticleResponseSchema, raw, 'Response for creating an article')
 }
