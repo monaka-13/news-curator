@@ -2,6 +2,8 @@
 
 Portfolio project to collect news, search, and summarize by AI for people interested in specific topic like working abroad and nomad work.
 
+![Screenshot](news-curator_UI.png)
+
 ## Implementation
 
 ### Repository layout
