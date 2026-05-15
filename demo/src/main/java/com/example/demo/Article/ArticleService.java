@@ -10,16 +10,22 @@ import com.example.demo.Article.dto.CreateArticleResponse;
 import com.example.demo.Article.dto.FetchArticleResponse;
 import com.example.demo.scrape.FetchedPage;
 import com.example.demo.scrape.SimplePageFetcher;
+import com.example.demo.summarization.SummarizationAsyncService;
 
 @Service
 public class ArticleService {
 
   private final ArticleRepository articleRepository;
   private final SimplePageFetcher simplePageFetcher;
+  private final SummarizationAsyncService summarizationAsyncService;
 
-  public ArticleService(ArticleRepository articleRepository, SimplePageFetcher simplePageFetcher) {
+  public ArticleService(
+      ArticleRepository articleRepository,
+      SimplePageFetcher simplePageFetcher,
+      SummarizationAsyncService summarizationAsyncService) {
     this.articleRepository = articleRepository;
     this.simplePageFetcher = simplePageFetcher;
+    this.summarizationAsyncService = summarizationAsyncService;
   }
 
   /**
@@ -55,8 +61,12 @@ public class ArticleService {
     } catch (IOException e) {
       throw new ArticleFetchException("Failed to fetch content for url=" + url, e);
     }
-    article.applyFetchedContent(page.getTitle(), page.getBody(), Instant.now());
+    Article.ApplyFetchedContentResult fetchResult =
+        article.applyFetchedContent(page.getTitle(), page.getBody(), Instant.now());
     Article saved = articleRepository.save(article);
+    if (fetchResult.requestSummarization()) {
+      summarizationAsyncService.summarizeAsync(saved.getId());
+    }
     return new FetchArticleResponse(
         saved.getId(),
         saved.getUrl(),
